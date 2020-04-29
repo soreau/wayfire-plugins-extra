@@ -32,41 +32,42 @@
 #include <wayfire/workspace-manager.hpp>
 #include <wayfire/signal-definitions.hpp>
 
-#include <wayfire/util/log.hpp>
-
 class fullscreen_subsurface : public wf::surface_interface_t, public wf::compositor_surface_t
 {
   public:
-    wayfire_view view;
+    bool _mapped = true;
     wf::geometry_t geometry;
 
     fullscreen_subsurface(wayfire_view view)
-        : wf::surface_interface_t(view.get()), wf::compositor_surface_t()
-     {
-        this->view = view;
-     }
+        : wf::surface_interface_t(view.get()), wf::compositor_surface_t() {}
 
-    ~fullscreen_subsurface() {}
+    ~fullscreen_subsurface()
+    {
+        _mapped = false;
+        wf::emit_map_state_change(this);
+    }
 
     bool accepts_input(int32_t sx, int32_t sy) override
     {
+        if (sx < geometry.x || sx > geometry.x + geometry.width ||
+            sy < geometry.y || sy > geometry.y + geometry.height)
+            return false;
+
         return true;
     }
 
     bool is_mapped() const override
     {
-        return view->is_mapped();
+        return _mapped;
     }
 
     wf::point_t get_offset() override
     {
-        LOGI(__func__, ": ", geometry.x, ",", geometry.y);
         return {geometry.x, geometry.y};
     }
 
     wf::dimensions_t get_size() const override
     {
-        LOGI(__func__, ": ", geometry.width, "x", geometry.height);
         return {geometry.width, geometry.height};
     }
 
@@ -88,8 +89,8 @@ class fullscreen_background
   public:
     wf::view_2D *transformer;
     wf::geometry_t saved_geometry;
-    std::unique_ptr<fullscreen_subsurface> subsurface_a;
-    std::unique_ptr<fullscreen_subsurface> subsurface_b;
+    std::unique_ptr<fullscreen_subsurface> subsurface_a = nullptr;
+    std::unique_ptr<fullscreen_subsurface> subsurface_b = nullptr;
 
     fullscreen_background(wayfire_view view) {}
 
@@ -136,10 +137,12 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
         if (background->subsurface_a)
         {
             background->subsurface_a->unref();
+            background->subsurface_a = nullptr;
         }
         if (background->subsurface_b)
         {
             background->subsurface_b->unref();
+            background->subsurface_b = nullptr;
         }
     }
 
@@ -160,21 +163,25 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
             if (scale_x > scale_y)
             {
                 scale_x = scale_y;
+                subsurface_a.width = ((og.width * (1.0 / scale_x)) - vg.width) / 2.0 + 1;
+                subsurface_a.height = vg.height;
+                subsurface_a.x = -subsurface_a.width;
+                subsurface_a.y = 0;
+                subsurface_b = subsurface_a;
+                subsurface_b.x = vg.width;
+                subsurface_b.y = 0;
             }
             else if (scale_x < scale_y)
             {
                 scale_y = scale_x;
+                subsurface_a.width = vg.width;
+                subsurface_a.height = ((og.height * (1.0 / scale_y)) - vg.height) / 2.0 + 1;
+                subsurface_a.x = 0;
+                subsurface_a.y = -subsurface_a.height;
+                subsurface_b = subsurface_a;
+                subsurface_b.x = 0;
+                subsurface_b.y = vg.height;
             }
-
-
-            subsurface_a.x = 0;
-            subsurface_a.y = 0;
-            subsurface_a.width = (og.width - (vg.width * scale_x)) / 2;
-            subsurface_a.height = (og.height - (vg.height * scale_y)) / 2;
-
-            subsurface_b = subsurface_a;
-            subsurface_b.x = subsurface_b.width + (vg.width * scale_x);
-            subsurface_b.y = subsurface_b.height + (vg.height * scale_y);
 
             create_subsurfaces(backgrounds[view], view);
             backgrounds[view]->subsurface_a->geometry = subsurface_a;
@@ -219,22 +226,11 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
         auto background = backgrounds.find(view);
         bool fullscreen = background == backgrounds.end() ? true : false;
 
-        wlr_box vg = view->get_output_geometry();
-
-        if (fullscreen)
-        {
-            saved_geometry = vg;
-        }
+        saved_geometry = view->get_wm_geometry();
 
         view->set_fullscreen(fullscreen);
 
-        if (fullscreen)
-        {
-            vg = view->get_wm_geometry();
-            saved_geometry.width = vg.width;
-            saved_geometry.height = vg.height;
-        }
-        else
+        if (!fullscreen)
         {
             deactivate(view);
             return true;
@@ -308,7 +304,6 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
         {
             view->pop_transformer(background_name);
         }
-        destroy_subsurfaces(background->second);
         backgrounds.erase(view);
     }
 
@@ -341,7 +336,6 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
             return;
         }
 
-        destroy_subsurfaces(background->second);
         toggle_fullscreen(view);
         backgrounds.erase(view);
 
@@ -378,7 +372,6 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
             return;
         }
 
-        destroy_subsurfaces(background->second);
         toggle_fullscreen(view);
         backgrounds.erase(view);
 
@@ -406,7 +399,7 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
 
         for (auto& b : backgrounds)
         {
-            destroy_subsurfaces(b.second);
+            toggle_fullscreen(b.first);
         }
     }
 };
