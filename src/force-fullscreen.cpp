@@ -87,28 +87,14 @@ class fullscreen_subsurface : public wf::surface_interface_t, public wf::composi
 class fullscreen_background
 {
   public:
-    wayfire_view view;
     wf::view_2D *transformer;
     wf::geometry_t saved_geometry;
     fullscreen_subsurface *subsurface_a = nullptr;
     fullscreen_subsurface *subsurface_b = nullptr;
 
-    fullscreen_background(wayfire_view view)
-    {
-        this->view = view;
-    }
+    fullscreen_background(wayfire_view view) {}
 
-    ~fullscreen_background()
-    {
-        if (subsurface_a)
-        {
-            view->remove_subsurface(subsurface_a);
-        }
-        if (subsurface_b)
-        {
-            view->remove_subsurface(subsurface_b);
-        }
-    }
+    ~fullscreen_background() {}
 };
 
 class wayfire_force_fullscreen;
@@ -118,7 +104,7 @@ std::map<wf::output_t*, wayfire_force_fullscreen*> wayfire_force_fullscreen_inst
 class wayfire_force_fullscreen : public wf::plugin_interface_t
 {
     std::string background_name;
-    std::map<wayfire_view, fullscreen_background*> backgrounds;
+    std::map<wayfire_view, std::unique_ptr<fullscreen_background>> backgrounds;
     wf::option_wrapper_t<bool> preserve_aspect{"force-fullscreen/preserve_aspect"};
     wf::option_wrapper_t<wf::keybinding_t> key_toggle_fullscreen{"force-fullscreen/key_toggle_fullscreen"};
 
@@ -303,16 +289,15 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
     void activate(wayfire_view view)
     {
         view->move(0, 0);
-        fullscreen_background *background = new fullscreen_background(view);
-        background->transformer = new wf::view_2D(view);
-        view->add_transformer(std::unique_ptr<wf::view_2D>(background->transformer), background_name);
+        backgrounds[view] = std::make_unique<fullscreen_background>(view);
+        backgrounds[view]->transformer = new wf::view_2D(view);
+        view->add_transformer(std::unique_ptr<wf::view_2D>(backgrounds[view]->transformer), background_name);
         output->connect_signal("output-configuration-changed", &output_config_changed);
         wf::get_core().connect_signal("view-move-to-output", &view_output_changed);
         output->connect_signal("view-fullscreen-request", &view_fullscreened);
         view->connect_signal("geometry-changed", &view_geometry_changed);
         output->connect_signal("unmap-view", &view_unmapped);
         output->deactivate_plugin(grab_interface);
-        backgrounds[view] = background;
         setup_transform(view);
     }
 
@@ -339,6 +324,7 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
         {
             view->pop_transformer(background_name);
         }
+        destroy_subsurfaces(view);
         backgrounds.erase(view);
     }
 
@@ -372,7 +358,6 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
         }
 
         toggle_fullscreen(view);
-        backgrounds.erase(view);
 
         auto instance = wayfire_force_fullscreen_instances[signal->new_output];
         instance->toggle_fullscreen(view);
@@ -408,7 +393,6 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
         }
 
         toggle_fullscreen(view);
-        backgrounds.erase(view);
 
         signal->carried_out = true;
     }};
