@@ -39,7 +39,7 @@ class fullscreen_subsurface : public wf::surface_interface_t, public wf::composi
     wf::geometry_t geometry;
 
     fullscreen_subsurface(wayfire_view view)
-        : wf::surface_interface_t(view.get()), wf::compositor_surface_t() {}
+        : wf::surface_interface_t(), wf::compositor_surface_t() {}
 
     ~fullscreen_subsurface()
     {
@@ -87,14 +87,28 @@ class fullscreen_subsurface : public wf::surface_interface_t, public wf::composi
 class fullscreen_background
 {
   public:
+    wayfire_view view;
     wf::view_2D *transformer;
     wf::geometry_t saved_geometry;
-    std::unique_ptr<fullscreen_subsurface> subsurface_a = nullptr;
-    std::unique_ptr<fullscreen_subsurface> subsurface_b = nullptr;
+    fullscreen_subsurface *subsurface_a = nullptr;
+    fullscreen_subsurface *subsurface_b = nullptr;
 
-    fullscreen_background(wayfire_view view) {}
+    fullscreen_background(wayfire_view view)
+    {
+        this->view = view;
+    }
 
-    ~fullscreen_background() {}
+    ~fullscreen_background()
+    {
+        if (subsurface_a)
+        {
+            view->remove_subsurface(subsurface_a);
+        }
+        if (subsurface_b)
+        {
+            view->remove_subsurface(subsurface_b);
+        }
+    }
 };
 
 class wayfire_force_fullscreen;
@@ -120,28 +134,52 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
         wayfire_force_fullscreen_instances[output] = this;
     }
 
-    void create_subsurfaces(fullscreen_background *background, wayfire_view view)
+    void create_subsurfaces(wayfire_view view)
     {
+        auto pair = backgrounds.find(view);
+
+        if (pair == backgrounds.end())
+        {
+            return;
+        }
+
+        auto& background = pair->second;
+
         if (!background->subsurface_a)
         {
-            background->subsurface_a = std::make_unique<fullscreen_subsurface>(view);
+            std::unique_ptr<fullscreen_subsurface> subsurface_a = std::make_unique<fullscreen_subsurface>(view);
+            nonstd::observer_ptr<fullscreen_subsurface> ptr{subsurface_a};
+            view->add_subsurface(std::move(subsurface_a), true);
+            background->subsurface_a = ptr.get();
         }
         if (!background->subsurface_b)
         {
-            background->subsurface_b = std::make_unique<fullscreen_subsurface>(view);
+            std::unique_ptr<fullscreen_subsurface> subsurface_b = std::make_unique<fullscreen_subsurface>(view);
+            nonstd::observer_ptr<fullscreen_subsurface> ptr{subsurface_b};
+            view->add_subsurface(std::move(subsurface_b), true);
+            background->subsurface_b = ptr.get();
         }
     }
 
-    void destroy_subsurfaces(fullscreen_background *background)
+    void destroy_subsurfaces(wayfire_view view)
     {
+        auto pair = backgrounds.find(view);
+
+        if (pair == backgrounds.end())
+        {
+            return;
+        }
+
+        auto& background = pair->second;
+
         if (background->subsurface_a)
         {
-            background->subsurface_a->unref();
+            view->remove_subsurface(background->subsurface_a);
             background->subsurface_a = nullptr;
         }
         if (background->subsurface_b)
         {
-            background->subsurface_b->unref();
+            view->remove_subsurface(background->subsurface_b);
             background->subsurface_b = nullptr;
         }
     }
@@ -183,13 +221,13 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
                 subsurface_b.y = vg.height;
             }
 
-            create_subsurfaces(backgrounds[view], view);
+            create_subsurfaces(view);
             backgrounds[view]->subsurface_a->geometry = subsurface_a;
             backgrounds[view]->subsurface_b->geometry = subsurface_b;
         }
         else
         {
-            destroy_subsurfaces(backgrounds[view]);
+            destroy_subsurfaces(view);
         }
 
         backgrounds[view]->transformer->scale_x = scale_x;
@@ -202,11 +240,9 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
 
     void update_backgrounds()
     {
-        std::map<wayfire_view, fullscreen_background*>::iterator it = backgrounds.begin();
- 
-	while (it != backgrounds.end())
+	for (auto& b : backgrounds)
 	{
-            setup_transform(it->first);
+            setup_transform(b.first);
 	}
     }
 
@@ -222,11 +258,10 @@ class wayfire_force_fullscreen : public wf::plugin_interface_t
             return false;
         }
 
-        wlr_box saved_geometry;
+        wlr_box saved_geometry = view->get_wm_geometry();
+
         auto background = backgrounds.find(view);
         bool fullscreen = background == backgrounds.end() ? true : false;
-
-        saved_geometry = view->get_wm_geometry();
 
         view->set_fullscreen(fullscreen);
 
