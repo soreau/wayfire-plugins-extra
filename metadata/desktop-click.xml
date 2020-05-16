@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="desktop-click">
+	<_short>Desktop Click</_short>
+	<_long>A plugin which allows you to bind actions when clicking on the desktop.</_long>
+	<category>Desktop</category>
+	<option name="activate_cube" type="button">
+		<_short>Activate Cube</_short>
+		<_long>Binding to activate cube when used on desktop.</_long>
+		<default>BTN_MIDDLE</default>
+	</option>
+	<option name="run_command" type="button">
+		<_short>Client Launch</_short>
+		<_long>Binding to launch client when used on desktop.</_long>
+		<default>BTN_RIGHT</default>
+	</option>
+	<option name="command" type="string">
+		<_short>Client Command</_short>
+		<_long>Command to run when client launch binding is used.</_long>
+		<default>terminator</default>
+	</option>
+	<option name="gtk_app" type="bool">
+		<_short>GTK Application</_short>
+		<_long>This option can be enabled to try and match gtk applications by passing --name to the command internally.</_long>
+		<default>false</default>
+	</option>
+	</plugin>
+</wayfire>

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="wallpaper">
+	<_short>Wallpaper</_short>
+	<_long>Render different wallpaper on each workspace.</_long>
+	<category>Desktop</category>
+	<option name="fade_duration" type="int">
+		<_short>Fade Duration</_short>
+		<_long>Image transition time.</_long>
+		<default>1000</default>
+		<min>0</min>
+	</option>
+	<option name="cycle_time" type="int">
+		<_short>Cycle Time</_short>
+		<_long>Time between changing images.</_long>
+		<default>1000</default>
+		<min>0</min>
+	</option>
+	<option name="cycle" type="bool">
+		<_short>Cycle Images</_short>
+		<_long>Cycle between images.</_long>
+		<default>false</default>
+	</option>
+	</plugin>
+</wayfire>

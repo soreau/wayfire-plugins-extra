@@ -172,7 +172,6 @@ class wayfire_annotate_screen : public wf::plugin_interface_t
         auto current_cursor = wf::get_core().get_cursor_position();
         auto& ol = get_current_overlay();
 
-
         switch (draw_method)
         {
             case ANNOTATE_METHOD_DRAW:

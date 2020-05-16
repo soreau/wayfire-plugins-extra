@@ -27,14 +27,10 @@
 #include <numeric>
 #include <wayfire/plugin.hpp>
 #include <wayfire/output.hpp>
+#include <wayfire/output-layout.hpp>
 #include <wayfire/render-manager.hpp>
 #include <wayfire/workspace-manager.hpp>
 #include <wayfire/plugins/common/cairo-util.hpp>
-
-extern "C"
-{
-#include <wlr/types/wlr_output.h>
-}
 
 #define WIDGET_PADDING 10
 
@@ -65,7 +61,6 @@ class wayfire_bench_screen : public wf::plugin_interface_t
 
         output->render->add_effect(&pre_hook, wf::OUTPUT_EFFECT_PRE);
         output->render->add_effect(&overlay_hook, wf::OUTPUT_EFFECT_OVERLAY);
-        output->render->set_redraw_always();
 
         output->connect_signal("reserved-workarea", &workarea_changed);
         position.set_callback(position_changed);
@@ -92,7 +87,7 @@ class wayfire_bench_screen : public wf::plugin_interface_t
         cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_set_font_size(cr, font_size);
 
-        cairo_text_extents(cr, "234.5", &text_extents);
+        cairo_text_extents(cr, "1000.0", &text_extents);
 
         widget_xc = text_extents.width / 2 + text_extents.x_bearing + WIDGET_PADDING;
         text_y = text_extents.height + WIDGET_PADDING;
@@ -275,16 +270,17 @@ class wayfire_bench_screen : public wf::plugin_interface_t
     wf::effect_hook_t overlay_hook = [=] ()
     {
         auto fb = output->render->get_target_framebuffer();
+
         OpenGL::render_begin(fb);
-        OpenGL::render_transformed_texture(wf::texture_t{bench_tex.tex},
-            cairo_geometry, fb.get_orthographic_projection(), glm::vec4(1.0),
+        fb.logic_scissor(cairo_geometry);
+        OpenGL::render_texture(wf::texture_t{bench_tex.tex},
+            fb, cairo_geometry, glm::vec4(1.0),
             OpenGL::TEXTURE_TRANSFORM_INVERT_Y);
         OpenGL::render_end();
     };
 
     void fini() override
     {
-        output->render->set_redraw_always(false);
         output->render->rem_effect(&pre_hook);
         output->render->rem_effect(&overlay_hook);
         cairo_surface_destroy(cairo_surface);

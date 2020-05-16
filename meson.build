@@ -18,6 +18,8 @@ giomm = dependency('giomm-2.4')
 wlroots = dependency('wlroots')
 wfconfig = dependency('wf-config')
 cairo = dependency('cairo')
+curl = dependency('libcurl')
+jpg = dependency('libjpeg')
 
 add_project_arguments(['-DWLR_USE_UNSTABLE'], language: ['cpp', 'c'])
 add_project_arguments(['-DWAYFIRE_PLUGIN'], language: ['cpp', 'c'])
