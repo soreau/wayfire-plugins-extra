@@ -7,6 +7,8 @@ install_data('join-views.xml', install_dir: wayfire.get_variable(pkgconfig: 'met
 install_data('keycolor.xml', install_dir: wayfire.get_variable(pkgconfig: 'metadatadir'))
 install_data('mag.xml', install_dir: wayfire.get_variable(pkgconfig: 'metadatadir'))
 install_data('showrepaint.xml', install_dir: wayfire.get_variable(pkgconfig: 'metadatadir'))
-install_data('wallpaper.xml', install_dir: wayfire.get_variable(pkgconfig: 'metadatadir'))
+if get_option('enable_wallpaper')
+    install_data('wallpaper.xml', install_dir: wayfire.get_variable(pkgconfig: 'metadatadir'))
+endif
 install_data('water.xml', install_dir: wayfire.get_variable(pkgconfig: 'metadatadir'))
 install_data('workspace-names.xml', install_dir: wayfire.get_variable(pkgconfig: 'metadatadir'))

@@ -34,9 +34,11 @@ showrepaint = shared_module('showrepaint', 'showrepaint.cpp',
     dependencies: [wayfire, wlroots, wfconfig],
     install: true, install_dir: join_paths(get_option('libdir'), 'wayfire'))
 
-wallpaper = shared_module('wallpaper', ['wallpaper.cpp'],
-    dependencies: [wayfire, wlroots, wfconfig, curl, jpg],
-    install: true, install_dir: join_paths(get_option('libdir'), 'wayfire'))
+if get_option('enable_wallpaper')
+    wallpaper = shared_module('wallpaper', ['wallpaper.cpp'],
+        dependencies: [wayfire, wlroots, wfconfig, curl, jpg],
+        install: true, install_dir: join_paths(get_option('libdir'), 'wayfire'))
+endif
 
 water = shared_module('water', ['water.cpp'],
     dependencies: [wayfire, wlroots, wfconfig],
