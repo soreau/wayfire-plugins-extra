@@ -2,33 +2,27 @@ name: CI
 
 on: [push, pull_request]
 jobs:
-  test_musl_gcc:
-    name: "Test with GCC/musl/libstdc++/BFD on Alpine Linux"
+  wayfire_musl_gcc:
+    name: "Build wayfire with GCC/musl/libstdc++/BFD on Alpine Linux"
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: wayfire
     container: alpine:edge
     steps:
     - run: apk --no-cache add git gcc g++ binutils pkgconf meson ninja musl-dev wayland-dev wayland-protocols libinput-dev libevdev-dev libxkbcommon-dev pixman-dev glm-dev libdrm-dev mesa-dev cairo-dev eudev-dev libxml2-dev libexecinfo-dev
     - run: git clone https://github.com/WayfireWM/wayfire
-    - working-directory: wayfire
     - run: meson build
     - run: ninja -v -Cbuild
     - run: ninja -v -Cbuild install
-    - uses: actions/checkout@v1
-    - run: meson build
-    - run: ninja -v -Cbuild
-  test_glibc_llvm:
-    name: "Test with clang/glibc/libc++/lld on Arch Linux"
+  test_musl_gcc:
+    name: "Test with GCC/musl/libstdc++/BFD on Alpine Linux"
     runs-on: ubuntu-latest
-    container: archlinux:latest
+    needs: wayfire_musl_gcc
+    container: alpine:edge
     steps:
-    - run: pacman-key --recv-key EA50C866329648EE && echo "[andontie-aur]" >> /etc/pacman.conf && echo "Server = https://aur.andontie.net/\$arch" >> /etc/pacman.conf && echo "SigLevel = Never" >> /etc/pacman.conf
-    - run: pacman --noconfirm --noprogressbar -Syyu
-    - run: pacman --noconfirm --noprogressbar -Sy git clang lld libc++ pkgconf meson ninja wayland wayland-protocols libinput libxkbcommon pixman glm libdrm libglvnd cairo
-    - run: git clone https://github.com/WayfireWM/wayfire
-    - working-directory: wayfire
-    - run: meson build
-    - run: ninja -v -Cbuild
-    - run: ninja -v -Cbuild install
+    - run: apk --no-cache add git gcc g++ binutils pkgconf meson ninja musl-dev wayland-dev wayland-protocols libinput-dev libevdev-dev libxkbcommon-dev pixman-dev glm-dev libdrm-dev mesa-dev cairo-dev eudev-dev libxml2-dev libexecinfo-dev
     - uses: actions/checkout@v1
-    - run: env CC=clang CXX=clang++ CXXFLAGS="-stdlib=libc++" LDFLAGS="-fuse-ld=lld -stdlib=libc++" meson build
+    - run: meson build
     - run: ninja -v -Cbuild
