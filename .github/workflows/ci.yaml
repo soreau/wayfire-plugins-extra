@@ -9,7 +9,7 @@ jobs:
     steps:
     - run: apk --no-cache add git gcc g++ binutils pkgconf meson ninja musl-dev wayland-dev wayland-protocols libinput-dev libevdev-dev libxkbcommon-dev pixman-dev glm-dev libdrm-dev mesa-dev cairo-dev eudev-dev libxml2-dev libexecinfo-dev
     - run: git clone https://github.com/WayfireWM/wayfire
-    - run: cd wayfire
+    - working-directory: wayfire
     - run: meson build
     - run: ninja -v -Cbuild
     - run: ninja -v -Cbuild install
@@ -25,7 +25,7 @@ jobs:
     - run: pacman --noconfirm --noprogressbar -Syyu
     - run: pacman --noconfirm --noprogressbar -Sy git clang lld libc++ pkgconf meson ninja wayland wayland-protocols libinput libxkbcommon pixman glm libdrm libglvnd cairo
     - run: git clone https://github.com/WayfireWM/wayfire
-    - run: cd wayfire
+    - working-directory: wayfire
     - run: meson build
     - run: ninja -v -Cbuild
     - run: ninja -v -Cbuild install
