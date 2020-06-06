@@ -26,6 +26,6 @@ jobs:
     - run: pacman --noconfirm --noprogressbar -Syyu
     - run: pacman --noconfirm --noprogressbar -Sy git clang lld libc++ pkgconf meson ninja wayland wayland-protocols libinput libxkbcommon pixman glm libdrm libglvnd cairo glibmm
     - run: git clone https://github.com/WayfireWM/wayfire
-    - run: cd wayfire && git submodule sync --recursive && git submodule update --init --force --recursive && meson build && ninja -v -Cbuild && ninja -v -Cbuild install && cd ..
+    - run: cd wayfire && git submodule sync --recursive && git submodule update --init --force --recursive && meson build --prefix=/usr && ninja -v -Cbuild && ninja -v -Cbuild install && cd ..
     - run: git clone https://github.com/WayfireWM/wayfire-plugins-extra
     - run: cd wayfire-plugins-extra && meson build && ninja -v -Cbuild && ninja -v -Cbuild install
