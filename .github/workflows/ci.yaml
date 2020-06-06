@@ -2,14 +2,21 @@ name: CI
 
 on: [push, pull_request]
 jobs:
-  test_musl_gcc:
-    name: "Test with GCC/musl/libstdc++/BFD on Alpine Linux"
+  wayfire_musl_gcc:
+    name: "Build wayfire with GCC/musl/libstdc++/BFD on Alpine Linux"
     runs-on: ubuntu-latest
     container: alpine:edge
     steps:
     - run: apk --no-cache add git gcc g++ binutils pkgconf meson ninja musl-dev wayland-dev wayland-protocols libinput-dev libevdev-dev libxkbcommon-dev pixman-dev glm-dev libdrm-dev mesa-dev cairo-dev eudev-dev libxml2-dev libexecinfo-dev
     - run: git clone https://github.com/WayfireWM/wayfire
-    - run: cd wayfire && meson build && ninja -v -Cbuild && ninja -v -Cbuild install && cd ..
+    - run: cd wayfire && meson build --prefix=/usr && ninja -v -Cbuild && ninja -v -Cbuild install
+  test_musl_gcc:
+    name: "Test with GCC/musl/libstdc++/BFD on Alpine Linux"
+    runs-on: ubuntu-latest
+    needs: wayfire_musl_gcc
+    container: alpine:edge
+    steps:
+    - run: apk --no-cache add git gcc g++ binutils pkgconf meson ninja musl-dev wayland-dev wayland-protocols libinput-dev libevdev-dev libxkbcommon-dev pixman-dev glm-dev libdrm-dev mesa-dev cairo-dev eudev-dev libxml2-dev libexecinfo-dev
     - uses: actions/checkout@v1
     - run: meson build
     - run: ninja -v -Cbuild
