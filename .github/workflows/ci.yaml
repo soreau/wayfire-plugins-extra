@@ -11,5 +11,5 @@ jobs:
     - run: git clone https://github.com/WayfireWM/wayfire
     - run: cd wayfire && meson build && ninja -v -Cbuild && ninja -v -Cbuild install
     - uses: actions/checkout@v1
-    - run: PKG_CONFIG_PATH=/usr/local/lib/pkgconfig meson build
+    - run: meson build
     - run: ninja -v -Cbuild
