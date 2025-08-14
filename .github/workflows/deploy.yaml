@@ -13,11 +13,9 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Build website
-        run: python ./xml-to-html.py
+        run: ls -l .; ls -l ..; python ./xml-to-html.py; ls -l .; ls -l ..;
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
