@@ -13,9 +13,6 @@ jobs:
       id-token: write
 
     steps:
-      - name: Install python
-        run: apt install python -y
-
       - name: Download
         uses: actions/checkout@v4
 
