@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build website
-        run: mkdir ./docs/_site; git clone https://roundabout-host.com/roundabout/wf-docs-generator -b production && cd wf-docs-generator && sed -i 's/\/static/.\/static/g' templates/default.html && python ./main.py && cd ..
+        run: mkdir ./docs/_site; git clone https://roundabout-host.com/roundabout/wf-docs-generator -b production && cd wf-docs-generator && python ./main.py && cd ..
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
