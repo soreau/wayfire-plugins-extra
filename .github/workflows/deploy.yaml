@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build website
-        run: ls -l .; ls -l ..; python ./docs/xml-to-html.py; ls -l .; ls -l ..;
+        run: mkdir ./docs/_site; python ./docs/xml-to-html.py
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
