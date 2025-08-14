@@ -15,6 +15,9 @@ jobs:
       name: github-pages
 
     steps:
+      - name: Install Dependencies
+        run: pip install jinja ampoule_ssg --break-system-packages
+
       - name: Download
         uses: actions/checkout@v4
 
