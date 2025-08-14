@@ -229,7 +229,7 @@ def generate_webpage(plugins_html):
 if __name__ == "__main__":
     plugins_html_content = generate_plugin_html(METADATA_DIR)
     webpage_content = generate_webpage(plugins_html_content)
-    with open("index.html", "w") as f:
+    with open("docs/_site/index.html", "w") as f:
         f.write(webpage_content)
 
-    print("Wayfire plugins webpage generated successfully as index.html")
+    print("Wayfire plugins webpage generated successfully as docs/_site/index.html")
