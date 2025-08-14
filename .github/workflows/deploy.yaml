@@ -17,12 +17,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build website
-        run: python ./docs/xml-to-html.py
+        run: python docs/xml-to-html.py
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs/wayfire_plugins.html
+          path: ./docs/
 
       - name: Deploy to GitHub Pages
         id: deployment
