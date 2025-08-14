@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build website
-        run: mkdir ./docs/_site; python ./docs/xml-to-html.py
+        run: mkdir ./docs/_site; git clone https://roundabout-host.com/roundabout/wf-docs-generator -b production && cd wf-docs-generator && python ./main.py
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
