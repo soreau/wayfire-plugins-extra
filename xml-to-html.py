@@ -229,7 +229,7 @@ def generate_webpage(plugins_html):
 if __name__ == "__main__":
     plugins_html_content = generate_plugin_html(METADATA_DIR)
     webpage_content = generate_webpage(plugins_html_content)
-
+    os.mkdir("docs")
     with open("docs/index.html", "w") as f:
         f.write(webpage_content)
 
