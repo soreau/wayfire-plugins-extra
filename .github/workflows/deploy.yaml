@@ -13,7 +13,12 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Install python
+        run: apt install python -y
+
+      - name: Download
+        uses: actions/checkout@v4
+
       - name: Build website
         run: ls -l .; ls -l ..; python ./xml-to-html.py; ls -l .; ls -l ..;
 
