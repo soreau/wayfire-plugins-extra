@@ -26,7 +26,7 @@
 import os
 import xml.etree.ElementTree as ET
 
-METADATA_DIR = "./metadata"
+METADATA_DIR = "../../../metadata"
 
 class PluginOption:
     def __init__(self, name, description):
