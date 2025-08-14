@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build website
-        run: python ./xml-to-html.py
+        run: python ./docs/xml-to-html.py
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
