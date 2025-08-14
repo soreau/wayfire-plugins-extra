@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Install Dependencies
-        run: pip install jinja ampoule_ssg --break-system-packages
+        run: pip install jinja2 ampoule_ssg --break-system-packages
 
       - name: Download
         uses: actions/checkout@v4
